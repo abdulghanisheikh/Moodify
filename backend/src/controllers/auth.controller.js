@@ -1,5 +1,97 @@
-async function register(req, res) {
+const userModel = require("../models/user.model.js");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
+async function registerUser(req, res) {
+    const {username, email, password} = req.body;
+
+    const isAlreadyRegistered = await userModel.findOne({
+        $or: [
+            { username },
+            { email }
+        ]
+    });
+
+    if(isAlreadyRegistered) {
+        return res.status(400).json({
+            success: true,
+            message: "User with same username or email already exists."
+        });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await userModel.create({
+        username,
+        email,
+        password: hashedPassword
+    });
+
+    // Make JWT token and save it into cookies
+    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, {
+        expiresIn: "3d"
+    });
+    res.cookie("token", token);
+
+    return res.status(200).json({
+        success: true,
+        message: "User registered",
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email
+        }
+    });
 }
 
-module.exports = { register }
+async function loginUser(req, res) {
+    const {username, email, password} = req.body;
+
+    const user = await userModel.findOne({
+        $or: [
+            { username },
+            { email }
+        ]
+    }).select("+password");
+
+    if(!user) {
+        return res.status(409).json({
+            success: true,
+            message: "Invalid credentials"
+        });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if(!isPasswordMatch) {
+        return res.status(400).json({
+            success: true,
+            message: "Invalid credentials"
+        });
+    }
+
+    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, {
+        expiresIn: "3d"
+    });
+
+    res.cookie("token", token);
+
+    res.status(200).json({
+        success: true,
+        message: "User logged in",
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email
+        }
+    });
+}
+
+async function logoutUser(req, res) {
+    // Logout user
+}
+
+module.exports = {
+    registerUser,
+    loginUser,
+    logoutUser
+}
