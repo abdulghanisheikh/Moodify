@@ -46,8 +46,8 @@ function mouthOpenScore(lm) {
 }
 
 function sadScore(lm) {
-  const faceH      = Math.abs(lm[10].y - lm[152].y) + 1e-6;
-  const lipMidY    = (lm[13].y + lm[14].y) / 2;
+  const faceH = Math.abs(lm[10].y - lm[152].y) + 1e-6;
+  const lipMidY = (lm[13].y + lm[14].y) / 2;
   const cornerAvgY = (lm[61].y + lm[291].y) / 2;
   return (cornerAvgY - lipMidY) / faceH;
 }
@@ -128,9 +128,9 @@ function drawFaceMesh(ctx, lm, w, h) {
 
 // COMPONENT
 export default function FaceExpressions() {
-  const videoRef  = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const modelRef  = useRef(null);
+  const modelRef = useRef(null);
   const streamRef = useRef(null);
 
   const [status, setStatus] = useState("loading"); // loading | ready | error
@@ -188,11 +188,11 @@ export default function FaceExpressions() {
 
   // Capture current frame and detect emotion
   const detectEmotion = useCallback(() => {
-    const video  = videoRef.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !modelRef.current || video.readyState < 2) return;
 
-    canvas.width  = video.videoWidth  || 640;
+    canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
     const ctx = canvas.getContext("2d");
@@ -258,11 +258,10 @@ export default function FaceExpressions() {
         <button
           onClick={detectEmotion}
           disabled={status !== "ready"}
-          className={`w-full py-2.5 rounded-lg text-sm font-medium ${
-            status === "ready"
+          className={`w-full py-2.5 rounded-lg text-sm font-medium ${status === "ready"
               ? "bg-white text-neutral-950 cursor-pointer"
               : "bg-neutral-800 text-neutral-600 cursor-not-allowed"
-          }`}
+            }`}
         >
           {status === "loading" ? "Starting camera…" : "Detect Emotion"}
         </button>
