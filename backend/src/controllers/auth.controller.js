@@ -1,18 +1,19 @@
 const userModel = require("../models/user.model.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const blacklistModel = require("../models/blacklist.model.js");
 
 async function registerUser(req, res) {
     const {username, email, password} = req.body;
 
-    const isAlreadyRegistered = await userModel.findOne({
+    const existingUser = await userModel.findOne({
         $or: [
             { username },
             { email }
         ]
     });
 
-    if(isAlreadyRegistered) {
+    if(existingUser) {
         return res.status(400).json({
             success: true,
             message: "User with same username or email already exists."
@@ -52,10 +53,10 @@ async function loginUser(req, res) {
             { username },
             { email }
         ]
-    }).select("+password");
+    }).select("+password"); // Force read password
 
     if(!user) {
-        return res.status(409).json({
+        return res.status(400).json({
             success: true,
             message: "Invalid credentials"
         });
@@ -87,7 +88,15 @@ async function loginUser(req, res) {
 }
 
 async function logoutUser(req, res) {
-    // Logout user
+    const token = req.cookies.token;
+
+    res.clearCookie("token");
+    await blacklistModel.create({ token });
+
+    res.status(200).json({
+        success: true,
+        message: "User logged out"
+    });
 }
 
 module.exports = {

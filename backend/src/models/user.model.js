@@ -14,10 +14,11 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "password is required."],
-        select: false
+        select: false // By default do not read
     }
 });
 
+// TASK
 // userSchema.pre("save", function(next) {});
 // userSchema.post("save", function(next) {});
 
