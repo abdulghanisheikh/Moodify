@@ -37,6 +37,4 @@ async function identifyUser(req, res, next) {
     next();
 }
 
-module.exports = {
-    identifyUser
-}
+module.exports = identifyUser;

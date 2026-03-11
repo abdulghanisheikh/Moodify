@@ -1,7 +1,32 @@
 import {Link} from "react-router";
 import FormGroup from "../components/FormGroup";
+import {useState} from "react";
+import {useAuth} from "../hooks/useAuth.js";
 
 const Register = () => {
+    const [userData, setUserData] = useState({
+        username: "",
+        email: "",
+        password: ""
+    });
+
+    const {handleRegister, loading} = useAuth();
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        try {
+            const {username, email, password} = userData;
+            await handleRegister(username, email, password);
+            setUserData({
+                username: "",
+                email: "",
+                password: ""
+            });
+        } catch(err) {
+            console.log(err.message);
+        }
+    }
+
     return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4 py-10 sm:p-6">
       <div className="w-full max-w-sm">
@@ -10,17 +35,37 @@ const Register = () => {
           Create Account
         </h1>
 
-        <div className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-          <FormGroup label="username" placeholder="Enter your username" />
-          <FormGroup label="email" placeholder="Enter your email" />
-          <FormGroup label="password" placeholder="Enter your password" />
+          <FormGroup 
+          name="username"
+          type="text"
+          value={userData.username}
+          onChange={(e) => setUserData({...userData, [e.target.name]: e.target.value})}
+          label="username"
+          placeholder="Enter your username" />
 
-          <button className="w-full py-3 sm:py-2.5 rounded-lg bg-orange-700 hover:bg-orange-600 duration-300 ease-in-out text-neutral-100 text-sm font-medium mt-2 cursor-pointer">
+          <FormGroup 
+          name="email"
+          type="text"
+          value={userData.email}
+          onChange={(e) => setUserData({...userData, [e.target.name]: e.target.value})}
+          label="email" 
+          placeholder="Enter your email" />
+
+          <FormGroup
+          name="password"
+          type="password"
+          value={userData.password}
+          onChange={(e) => setUserData({...userData, [e.target.name]: e.target.value})}
+          label="password"
+          placeholder="Enter your password" />
+
+          <button type="submit" className="w-full py-3 sm:py-2.5 rounded-lg bg-orange-700 hover:bg-orange-600 duration-300 ease-in-out text-neutral-100 text-sm font-medium mt-2 cursor-pointer active:scale-95">
             Create Account
           </button>
 
-        </div>
+        </form>
 
         <p className="text-center text-sm text-neutral-600 mt-6">
           Already have an account?{" "}

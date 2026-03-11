@@ -1,8 +1,11 @@
 import AppRoutes from "./AppRoutes";
+import { AuthProvider } from "./features/Auth/auth.context";
 
 const App = () => {
   return (
-    <AppRoutes />
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 
