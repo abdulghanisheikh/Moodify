@@ -1,8 +1,8 @@
-import FaceExpressions from "./features/Expression/components/FaceExpressions";
+import AppRoutes from "./AppRoutes";
 
 const App = () => {
   return (
-    <FaceExpressions />
+    <AppRoutes />
   )
 }
 
