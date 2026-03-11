@@ -1,4 +1,5 @@
 import {Link} from "react-router";
+import FormGroup from "../components/FormGroup";
 
 const Login = () => {
     return (
@@ -11,23 +12,8 @@ const Login = () => {
 
         <div className="flex flex-col gap-4">
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-neutral-400">Username</label>
-            <input
-              type="text"
-              placeholder="Enter your username"
-              className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-white text-sm placeholder:text-neutral-600 outline-none focus:border-neutral-600"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-neutral-400">Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-white text-sm placeholder:text-neutral-600 outline-none focus:border-neutral-600"
-            />
-          </div>
+          <FormGroup label="username" placeholder="Enter your username" />
+          <FormGroup label="password" placeholder="Enter your password" />
 
           <button className="w-full py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-medium mt-2 cursor-pointer">
             Login
