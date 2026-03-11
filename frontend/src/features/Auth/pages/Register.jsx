@@ -16,7 +16,7 @@ const Register = () => {
           <FormGroup label="email" placeholder="Enter your email" />
           <FormGroup label="password" placeholder="Enter your password" />
 
-          <button className="w-full py-3 sm:py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-medium mt-2 cursor-pointer">
+          <button className="w-full py-3 sm:py-2.5 rounded-lg bg-orange-700 hover:bg-orange-600 duration-300 ease-in-out text-neutral-100 text-sm font-medium mt-2 cursor-pointer">
             Create Account
           </button>
 
@@ -24,7 +24,7 @@ const Register = () => {
 
         <p className="text-center text-sm text-neutral-600 mt-6">
           Already have an account?{" "}
-          <Link to="/login" className="text-neutral-400 cursor-pointer">Login</Link>
+          <Link to="/login" className="text-orange-600 cursor-pointer">Login</Link>
         </p>
 
       </div>

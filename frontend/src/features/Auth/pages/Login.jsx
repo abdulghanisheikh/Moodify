@@ -15,7 +15,7 @@ const Login = () => {
           <FormGroup label="username" placeholder="Enter your username" />
           <FormGroup label="password" placeholder="Enter your password" />
 
-          <button className="w-full py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-medium mt-2 cursor-pointer">
+          <button className="w-full py-2.5 rounded-lg bg-orange-700 hover:bg-orange-600 duration-300 ease-in-out text-neutral-100 text-sm font-medium mt-2 cursor-pointer">
             Login
           </button>
 
@@ -23,7 +23,7 @@ const Login = () => {
 
         <p className="text-center text-sm text-neutral-600 mt-6">
           Don't have an account?{" "}
-          <Link className="text-neutral-400 cursor-pointer" to="/register">Sign up</Link>
+          <Link className="text-orange-600 cursor-pointer" to="/register">Sign up</Link>
         </p>
 
       </div>
