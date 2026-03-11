@@ -11,8 +11,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 
-app.get("/", (req, res) => {
-    res.send("hello");
+app.get("*name", (req, res) => {
+    res.send("You are at wild card route.");
 });
 
 module.exports = app;

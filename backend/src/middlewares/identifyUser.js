@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const blacklistModel = require("../models/blacklist.model.js");
+const redis = require("../configs/cache.js");
 
 async function identifyUser(req, res, next) {
     const token = req.cookies.token;
@@ -10,9 +10,14 @@ async function identifyUser(req, res, next) {
             message: "No token found, Unauthorized access."
         });
     }
-
-    // Check for blacklist token
-    const isTokenBlacklisted = await blacklistModel.findOne({ token });
+    
+    // Checking for blacklisted token from redis
+    let isTokenBlacklisted;
+    try {
+        isTokenBlacklisted = await redis.get(token);
+    } catch(err) {
+        console.log(err.message);
+    }
 
     if(isTokenBlacklisted) {
         return res.status(401).json({
