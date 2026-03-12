@@ -1,4 +1,4 @@
-import {Link} from "react-router";
+import {Link, useNavigate} from "react-router";
 import FormGroup from "../components/FormGroup";
 import {useState} from "react";
 import {useAuth} from "../hooks/useAuth.js";
@@ -10,13 +10,18 @@ const Register = () => {
         password: ""
     });
 
-    const {handleRegister, loading} = useAuth();
+    const navigate = useNavigate();
+
+    const {handleRegister} = useAuth();
 
     async function handleSubmit(e) {
         e.preventDefault();
         try {
             const {username, email, password} = userData;
             await handleRegister(username, email, password);
+
+            navigate("/");
+
             setUserData({
                 username: "",
                 email: "",
