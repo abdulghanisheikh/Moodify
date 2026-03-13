@@ -4,7 +4,7 @@ const storageService = require("../services/storage.service.js");
 
 async function uploadSong(req, res) {
     const songBuffer = req.file.buffer;
-    const mood = req.body;
+    const { mood } = req.body;
 
     // Buffer has data such as audio buffer and metadata of song file
     const tags = id3.read(songBuffer);
@@ -25,7 +25,7 @@ async function uploadSong(req, res) {
         ]
     );
     
-    // Storing file's metadata in MongoDB
+    // Storing file metadata in MongoDB
     const song = await songModel.create({
         URL: songFile.url,
         posterURL: posterFile.url,
@@ -40,6 +40,26 @@ async function uploadSong(req, res) {
     });
 }
 
+async function getSong(req, res) {
+    const {mood} = req.query;
+
+    const song = await songModel.findOne({ mood });
+
+    if(!song) {
+        return res.status(400).json({
+            success: true,
+            message: "No song found."
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Song fetched",
+        song
+    });
+}
+
 module.exports = {
-    uploadSong
+    uploadSong,
+    getSong
 }
