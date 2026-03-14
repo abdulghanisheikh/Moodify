@@ -43,40 +43,19 @@ function sadScore(lm) {
 
 function classifyEmotion(lm) {
   const smile = smileScore(lm);
-  const leftEAR = leftEyeScore(lm);
-  const rightEAR = rightEyeScore(lm);
   const brow = browRaiseScore(lm);
-  const mouth = mouthOpenScore(lm);
   const sad = sadScore(lm);
 
   const IS_SMILING = smile > 0.078;
-  const IS_LEFT_BLINK = leftEAR < 0.20;
-  const IS_RIGHT_BLINK = rightEAR < 0.20;
-  const IS_BOTH_BLINK = IS_LEFT_BLINK && IS_RIGHT_BLINK;
   const IS_BROW_RAISED = brow > 0.12;
-  const IS_MOUTH_OPEN = mouth > 0.05;
   const IS_SAD = sad > 0.005;
-
-  if (IS_BOTH_BLINK && !IS_MOUTH_OPEN) {
-    return { emotion: "sleeping", label: "Sleepy", emoji: "😴" };
-  } else if (IS_BROW_RAISED && IS_MOUTH_OPEN) {
-    return { emotion: "shocked", label: "Shocked", emoji: "😱" };
-  } else if (IS_BROW_RAISED && IS_SMILING) {
-    return { emotion: "excited", label: "Excited", emoji: "🤩" };
-  } else if (IS_SMILING && IS_MOUTH_OPEN) {
-    return { emotion: "laughing", label: "Laughing", emoji: "😄" };
-  } else if (IS_SMILING) {
+  
+  if(IS_SMILING) {
     return { emotion: "happy", label: "Happy", emoji: "😊" };
-  } else if (IS_BROW_RAISED) {
+  } else if(IS_BROW_RAISED) {
     return { emotion: "surprise", label: "Surprised", emoji: "😲" };
-  } else if (IS_MOUTH_OPEN) {
-    return { emotion: "talking", label: "Talking", emoji: "😮" };
-  } else if (IS_SAD) {
+  } else if(IS_SAD) {
     return { emotion: "sad", label: "Sad", emoji: "🙁" };
-  } else if (IS_LEFT_BLINK && !IS_RIGHT_BLINK) {
-    return { emotion: "wink_left", label: "Winking", emoji: "😉" };
-  } else if (IS_RIGHT_BLINK && !IS_LEFT_BLINK) {
-    return { emotion: "wink_right", label: "Winking", emoji: "😏" };
   } else {
     return { emotion: "neutral", label: "Neutral", emoji: "😐" };
   }
@@ -239,20 +218,20 @@ export default function FaceExpressions() {
 
     const res = modelRef.current.detectForVideo(video, performance.now());
 
-    let mood = null;
+    let emotion = null;
     if (res.faceLandmarks?.length > 0) {
       const lm = res.faceLandmarks[0];
       drawFaceMesh(ctx, lm, canvas.width, canvas.height);
-      mood = classifyEmotion(lm);
-      setResult(mood);
+      emotion = classifyEmotion(lm);
+      setResult(emotion);
     } else {
       setResult({ emotion: "none", label: "No face found", emoji: "🤷" });
     }
 
-    return mood.emotion;
+    return emotion.emotion;
   }, []);
 
-  // ── Cleanup on unmount ────────────────────────────────────────────────────
+  // Cleanup on unmount
   useEffect(() => () => {
     cancelAnimationFrame(rafRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
@@ -289,7 +268,7 @@ export default function FaceExpressions() {
           {!isRunning && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900">
               {status === "loading" && (
-                <span className="text-xs text-neutral-500">Loading model…</span>
+                <span className="text-xs text-neutral-500">Loading model...</span>
               )}
               {status === "ready" && (
                 <span className="text-xs text-neutral-600">Camera is off</span>

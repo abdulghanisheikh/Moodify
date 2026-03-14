@@ -7,7 +7,7 @@ export function useSong() {
 
     const { song, setSong, loading, setLoading } = context;
 
-    async function handleGetSong({mood}) {
+    async function handleGetSong({ mood }) {
         setLoading(true);
         
         const res = await getSong({mood});
