@@ -1,25 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSong } from "../../home/hooks/useSong.js";
 
 function smileScore(lm) {
   const faceH = Math.abs(lm[10].y - lm[152].y) + 1e-6;
   const cornerAvgY = (lm[61].y + lm[291].y) / 2;
   return (lm[17].y - cornerAvgY) / faceH;
-}
-
-function eyeAspectRatio(lm, p1, p2, p3, p4, p5, p6) {
-  const A = Math.hypot(lm[p2].x - lm[p6].x, lm[p2].y - lm[p6].y);
-  const B = Math.hypot(lm[p3].x - lm[p5].x, lm[p3].y - lm[p5].y);
-  const C = Math.hypot(lm[p1].x - lm[p4].x, lm[p1].y - lm[p4].y) + 1e-6;
-  return (A + B) / (2 * C);
-}
-
-function leftEyeScore(lm) {
-  return eyeAspectRatio(lm, 33, 160, 158, 133, 153, 144);
-}
-
-function rightEyeScore(lm) {
-  return eyeAspectRatio(lm, 362, 387, 385, 263, 380, 373);
 }
 
 function browRaiseScore(lm) {
@@ -90,14 +74,12 @@ function drawFaceMesh(ctx, lm, w, h) {
 }
 
 // COMPONENT
-export default function FaceExpressions() {
+export default function FaceExpressions({ onClick = () => {} }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const modelRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
-
-  const { handleGetSong } = useSong();
 
   // "loading"  — model loading on mount
   // "ready"    — model loaded, camera is OFF
@@ -239,6 +221,11 @@ export default function FaceExpressions() {
 
   const isRunning = status === "running";
 
+  async function handleClick() {
+    const emotion = detectEmotion();
+    onClick(emotion);
+  }
+
   return (
     <div className="min-h-screen bg-neutral-950 flex justify-center pt-10">
       <div className="flex flex-col items-center gap-5 w-full max-w-md">
@@ -320,10 +307,7 @@ export default function FaceExpressions() {
 
           {/* Detect Emotion button — only active while camera is running */}
           <button
-            onClick={async() => {
-              const emotion = detectEmotion();
-              await handleGetSong({ mood: emotion });
-            }}
+            onClick={handleClick}
             disabled={!isRunning}
             className={`flex-1 py-2.5 rounded-lg text-sm font-medium active:scale-90 duration-300 ease-in-out ${isRunning
               ? "bg-neutral-700 text-white cursor-pointer"
