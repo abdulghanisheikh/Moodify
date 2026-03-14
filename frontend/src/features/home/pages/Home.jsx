@@ -1,7 +1,13 @@
+import FaceExpressions from "../../Expression/components/FaceExpressions";
+import Player from "../components/Player";
+
 const Home = () => {
-  return <div>
-    Home
-  </div>
+  return (
+    <main>
+        <FaceExpressions />
+        <Player />
+    </main>
+)
 }
 
 export default Home;

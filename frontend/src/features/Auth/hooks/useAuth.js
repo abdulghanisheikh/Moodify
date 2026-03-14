@@ -20,7 +20,7 @@ export function useAuth() {
         setLoading(true);
 
         const res = await login(username, password);
-        const {data} = res;
+        const { data } = res;
         
         setUser(data.user);
         setLoading(false);
@@ -38,8 +38,18 @@ export function useAuth() {
     async function handleGetMe() {
         setLoading(true);
 
-        const res = await getMe();
-        const {data} = res;
+        let res = null;
+        try {
+            res = await getMe();
+        } catch(err) {
+            console.log(err.message);
+            
+            // If middleware found no token 
+            setUser(null);
+            setLoading(false);
+            return;
+        }
+        const { data } = res;
 
         setUser(data.user);
         setLoading(false);

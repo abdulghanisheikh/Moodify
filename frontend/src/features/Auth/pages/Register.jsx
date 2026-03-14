@@ -17,7 +17,7 @@ const Register = () => {
     async function handleSubmit(e) {
         e.preventDefault();
         try {
-            const {username, email, password} = userData;
+            const { username, email, password } = userData;
             await handleRegister(username, email, password);
 
             navigate("/");
