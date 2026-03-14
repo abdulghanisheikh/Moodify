@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useSong } from "../../home/hooks/useSong.js";
 
 function smileScore(lm) {
   const faceH = Math.abs(lm[10].y - lm[152].y) + 1e-6;
@@ -57,27 +58,27 @@ function classifyEmotion(lm) {
   const IS_SAD = sad > 0.005;
 
   if (IS_BOTH_BLINK && !IS_MOUTH_OPEN) {
-    return { emotion: "sleeping", label: "Sleepy",    emoji: "😴" };
+    return { emotion: "sleeping", label: "Sleepy", emoji: "😴" };
   } else if (IS_BROW_RAISED && IS_MOUTH_OPEN) {
-    return { emotion: "shocked",  label: "Shocked",   emoji: "😱" };
+    return { emotion: "shocked", label: "Shocked", emoji: "😱" };
   } else if (IS_BROW_RAISED && IS_SMILING) {
-    return { emotion: "excited",  label: "Excited",   emoji: "🤩" };
+    return { emotion: "excited", label: "Excited", emoji: "🤩" };
   } else if (IS_SMILING && IS_MOUTH_OPEN) {
-    return { emotion: "laughing", label: "Laughing",  emoji: "😄" };
+    return { emotion: "laughing", label: "Laughing", emoji: "😄" };
   } else if (IS_SMILING) {
-    return { emotion: "happy",    label: "Happy",     emoji: "😊" };
+    return { emotion: "happy", label: "Happy", emoji: "😊" };
   } else if (IS_BROW_RAISED) {
-    return { emotion: "surprised",label: "Surprised", emoji: "😲" };
+    return { emotion: "surprise", label: "Surprised", emoji: "😲" };
   } else if (IS_MOUTH_OPEN) {
-    return { emotion: "talking",  label: "Talking",   emoji: "😮" };
+    return { emotion: "talking", label: "Talking", emoji: "😮" };
   } else if (IS_SAD) {
-    return { emotion: "sad",      label: "Sad",       emoji: "🙁" };
+    return { emotion: "sad", label: "Sad", emoji: "🙁" };
   } else if (IS_LEFT_BLINK && !IS_RIGHT_BLINK) {
-    return { emotion: "wink_left",label: "Winking",   emoji: "😉" };
+    return { emotion: "wink_left", label: "Winking", emoji: "😉" };
   } else if (IS_RIGHT_BLINK && !IS_LEFT_BLINK) {
-    return { emotion: "wink_right",label: "Winking",  emoji: "😏" };
+    return { emotion: "wink_right", label: "Winking", emoji: "😏" };
   } else {
-    return { emotion: "neutral",  label: "Neutral",   emoji: "😐" };
+    return { emotion: "neutral", label: "Neutral", emoji: "😐" };
   }
 }
 
@@ -90,11 +91,11 @@ function drawFaceMesh(ctx, lm, w, h) {
   }
 
   const contours = [
-    [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,
-     152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10],
-    [33,7,163,144,145,153,154,155,133,33],
-    [362,382,381,380,374,373,390,249,263,362],
-    [61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146,61],
+    [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377,
+      152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10],
+    [33, 7, 163, 144, 145, 153, 154, 155, 133, 33],
+    [362, 382, 381, 380, 374, 373, 390, 249, 263, 362],
+    [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146, 61],
   ];
 
   ctx.strokeStyle = "rgba(52, 211, 153, 0.25)";
@@ -109,15 +110,15 @@ function drawFaceMesh(ctx, lm, w, h) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function FaceExpressions() {
-  const videoRef  = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const modelRef  = useRef(null);
+  const modelRef = useRef(null);
   const streamRef = useRef(null);
-  const rafRef    = useRef(null);         // ← for the continuous tracking loop
+  const rafRef = useRef(null);
+
+  const { handleGetSong } = useSong();
 
   // "loading"  — model loading on mount
   // "ready"    — model loaded, camera is OFF
@@ -126,7 +127,7 @@ export default function FaceExpressions() {
   const [status, setStatus] = useState("loading");
   const [result, setResult] = useState(null);
 
-  // ── Load model only on mount (no camera yet) ──────────────────────────────
+  // Load model only on mount (no camera yet)
   useEffect(() => {
     let cancelled = false;
 
@@ -145,7 +146,7 @@ export default function FaceExpressions() {
               "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
             delegate: "GPU",
           },
-          runningMode: "VIDEO",   // ← VIDEO mode for continuous tracking
+          runningMode: "VIDEO",
           numFaces: 1,
         });
 
@@ -164,7 +165,7 @@ export default function FaceExpressions() {
     };
   }, []);
 
-  // ── Open camera + start continuous tracking loop ──────────────────────────
+  // Open camera + start continuous tracking loop
   const openCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -185,7 +186,7 @@ export default function FaceExpressions() {
           if (video.readyState < 2) return;
 
           const canvas = canvasRef.current;
-          canvas.width  = video.videoWidth  || 640;
+          canvas.width = video.videoWidth || 640;
           canvas.height = video.videoHeight || 480;
 
           const ctx = canvas.getContext("2d");
@@ -196,7 +197,8 @@ export default function FaceExpressions() {
           if (res.faceLandmarks?.length > 0) {
             const lm = res.faceLandmarks[0];
             drawFaceMesh(ctx, lm, canvas.width, canvas.height);
-            setResult(classifyEmotion(lm));
+            const mood = classifyEmotion(lm);
+            setResult(mood);
           } else {
             setResult(null);
           }
@@ -210,7 +212,7 @@ export default function FaceExpressions() {
     }
   }, []);
 
-  // ── Close camera + stop loop ──────────────────────────────────────────────
+  // Close camera + stop loop
   const closeCamera = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
@@ -223,13 +225,13 @@ export default function FaceExpressions() {
     setResult(null);
   }, []);
 
-  // ── Detect once — snapshot current frame (kept as-is) ────────────────────
+  //  Detect once — snapshot current frame (kept as-is)
   const detectEmotion = useCallback(() => {
-    const video  = videoRef.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || !modelRef.current || video.readyState < 2) return;
 
-    canvas.width  = video.videoWidth  || 640;
+    canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
     const ctx = canvas.getContext("2d");
@@ -237,13 +239,17 @@ export default function FaceExpressions() {
 
     const res = modelRef.current.detectForVideo(video, performance.now());
 
+    let mood = null;
     if (res.faceLandmarks?.length > 0) {
       const lm = res.faceLandmarks[0];
       drawFaceMesh(ctx, lm, canvas.width, canvas.height);
-      setResult(classifyEmotion(lm));
+      mood = classifyEmotion(lm);
+      setResult(mood);
     } else {
       setResult({ emotion: "none", label: "No face found", emoji: "🤷" });
     }
+
+    return mood.emotion;
   }, []);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────────
@@ -255,10 +261,10 @@ export default function FaceExpressions() {
   const isRunning = status === "running";
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-neutral-950 flex justify-center pt-10">
       <div className="flex flex-col items-center gap-5 w-full max-w-md">
 
-        <h1 className="font-medium text-white text-3xl">
+        <h1 className="font-medium text-white text-4xl">
           Face Expression Tracker
         </h1>
 
@@ -314,7 +320,7 @@ export default function FaceExpressions() {
               disabled
               className="flex-1 py-2.5 rounded-lg bg-neutral-800 text-sm text-neutral-600 cursor-not-allowed"
             >
-              Loading…
+              Loading...
             </button>
           ) : isRunning ? (
             <button
@@ -335,17 +341,18 @@ export default function FaceExpressions() {
 
           {/* Detect Emotion button — only active while camera is running */}
           <button
-            onClick={detectEmotion}
+            onClick={async() => {
+              const emotion = detectEmotion();
+              await handleGetSong({ mood: emotion });
+            }}
             disabled={!isRunning}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium ${
-              isRunning
-                ? "bg-neutral-700 text-white cursor-pointer"
-                : "bg-neutral-800 text-neutral-600 cursor-not-allowed"
-            }`}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium active:scale-90 duration-300 ease-in-out ${isRunning
+              ? "bg-neutral-700 text-white cursor-pointer"
+              : "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+              }`}
           >
             Detect Emotion
           </button>
-
         </div>
       </div>
     </div>

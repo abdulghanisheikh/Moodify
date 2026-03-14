@@ -1,45 +1,27 @@
 import { useRef, useState, useEffect } from "react";
+import { useSong } from "../hooks/useSong.js";
 
-// Song data — in real app this comes from props or state
-const song = {
-    _id: { $oid: "69b3ea38a55ccdb93befa6f6" },
-    URL: "https://ik.imagekit.io/AbdulGhani/moodify/songs/Wingman_ujC13PZqz.mp3",
-    posterURL: "https://ik.imagekit.io/AbdulGhani/moodify/posters/Wingman_DvLzMfhEY.jpeg",
-    title: "Wingman",
-    mood: "happy",
-};
-
-// Available playback speed options
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
 
 export default function Player() {
+    const { song } = useSong();
 
-    // Ref to directly access the <audio> element in the DOM
     const audioRef = useRef(null);
 
-    const [playing, setPlaying] = useState(false); // is the song currently playing
-    const [current, setCurrent] = useState(0);     // current playback time in seconds
-    const [duration, setDuration] = useState(0);     // total song duration in seconds
-    const [speed, setSpeed] = useState(1);      // current playback speed
+    const [playing, setPlaying] = useState(false);
+    const [current, setCurrent] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [speed, setSpeed] = useState(1);
 
-    // Attach audio event listeners when the component mounts
+    // Attach audio event listeners on mount, clean up on unmount
     useEffect(() => {
         const audio = audioRef.current;
-
-        // Update current time as song plays
         const onTime = () => setCurrent(audio.currentTime);
-
-        // Set duration once audio metadata (length, etc.) is loaded
         const onLoad = () => setDuration(audio.duration);
-
-        // Mark song as stopped when it finishes
         const onEnd = () => setPlaying(false);
-
         audio.addEventListener("timeupdate", onTime);
         audio.addEventListener("loadedmetadata", onLoad);
         audio.addEventListener("ended", onEnd);
-
-        // Remove listeners when component unmounts to avoid memory leaks
         return () => {
             audio.removeEventListener("timeupdate", onTime);
             audio.removeEventListener("loadedmetadata", onLoad);
@@ -47,21 +29,20 @@ export default function Player() {
         };
     }, []);
 
-    // Toggle between play and pause
+    // Toggle play / pause
     function togglePlay() {
         const audio = audioRef.current;
         if (playing) { audio.pause(); setPlaying(false); }
         else { audio.play(); setPlaying(true); }
     }
 
-    // Jump to a specific position in the song (called by the seek bar)
+    // Seek to a specific second
     function seek(val) {
         audioRef.current.currentTime = val;
         setCurrent(val);
     }
 
-    // Skip forward or backward by given seconds (e.g. +5 or -5)
-    // Math.min/max keeps it within 0 and total duration
+    // Skip forward or backward by sec seconds
     function skip(sec) {
         audioRef.current.currentTime = Math.min(
             Math.max(0, audioRef.current.currentTime + sec),
@@ -69,97 +50,85 @@ export default function Player() {
         );
     }
 
-    // Change playback speed and update the audio element
+    // Change playback speed
     function changeSpeed(s) {
         audioRef.current.playbackRate = s;
         setSpeed(s);
     }
 
-    // Format seconds into m:ss display (e.g. 90 → "1:30")
-    function fmt(s) {
+    // Format seconds → "m:ss"
+    function formatTime(s) {
         const m = Math.floor(s / 60);
         const sec = String(Math.floor(s % 60)).padStart(2, "0");
         return `${m}:${sec}`;
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
-            <div className="w-full max-w-sm flex flex-col gap-5">
+        <div className="fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-orange-500/30 px-10 py-3">
 
-                {/* Song cover image */}
-                <img
-                    src={song.posterURL}
-                    alt={song.title}
-                    className="w-full aspect-square object-cover rounded-xl"
-                />
+            {/* Poster + info on left | Controls on right */}
+            <div className="flex items-center justify-between gap-5">
 
-                {/* Song title and mood label */}
-                <div>
-                    <p className="text-white font-semibold text-lg">{song.title}</p>
-                    <p className="text-neutral-500 text-sm capitalize">{song.mood}</p>
-                </div>
-
-                {/* Seek bar — drag to jump to any point in the song */}
-                <div className="flex flex-col gap-1">
-                    <input
-                        type="range"
-                        min={0}
-                        max={duration || 0}
-                        step={0.1}
-                        value={current}
-                        onChange={e => seek(Number(e.target.value))}
-                        className="w-full accent-white cursor-pointer"
+                {/* Left — poster thumbnail and song info */}
+                <div className="flex items-center gap-3 min-w-0">
+                    <img
+                        src={song.posterURL}
+                        alt={song.title}
+                        className="w-10 h-10 rounded-md object-cover shrink-0"
                     />
-                    {/* Current time on left, total duration on right */}
-                    <div className="flex justify-between text-xs text-neutral-500">
-                        <span>{fmt(current)}</span>
-                        <span>{fmt(duration)}</span>
+                    <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{song.title}</p>
+                        <p className="text-orange-500/60 text-xs capitalize">{song.mood}</p>
                     </div>
                 </div>
 
-                {/* Playback controls — skip back, play/pause, skip forward */}
-                <div className="flex items-center justify-between">
+                {/* Seek bar with timestamps */}
+                <div className="flex items-center w-full gap-2 px-10">
+                    <span className="text-xs text-orange-500/60 w-8 text-right">{formatTime(current)}</span>
+                    <input
+                        type="range"
+                        min={0} max={duration || 0} step={0.1}
+                        value={current}
+                        onChange={e => seek(Number(e.target.value))}
+                        className="flex-1 accent-orange-500 cursor-pointer"
+                    />
+                    <span className="text-xs text-orange-500/60 w-8">{formatTime(duration)}</span>
+                </div>
 
-                    {/* Go back 5 seconds */}
-                    <button onClick={() => skip(-5)} className="text-neutral-400 text-sm cursor-pointer">
-                        ↺ 5
-                    </button>
+                {/* Right — skip back, play/pause, skip forward, speed */}
+                <div className="flex items-center gap-3 shrink-0">
 
-                    {/* Play / Pause toggle button */}
+                    <button onClick={() => skip(-5)} className="text-orange-500 text-xs cursor-pointer">↺5</button>
+
                     <button
                         onClick={togglePlay}
-                        className="w-12 h-12 rounded-full bg-white text-neutral-950 flex items-center justify-center text-lg cursor-pointer"
+                        className="w-9 h-9 rounded-full bg-orange-500 text-black flex items-center justify-center cursor-pointer"
                     >
                         {playing ? "⏸" : "▶"}
                     </button>
 
-                    {/* Go forward 5 seconds */}
-                    <button onClick={() => skip(5)} className="text-neutral-400 text-sm cursor-pointer">
-                        ↻ 5
-                    </button>
+                    <button onClick={() => skip(5)} className="text-orange-500 text-xs cursor-pointer">↻5</button>
+
+                    <div className="flex items-center gap-1">
+                        {SPEEDS.map(s => (
+                            <button
+                                key={s}
+                                onClick={() => changeSpeed(s)}
+                                className={`px-1.5 py-0.5 rounded text-xs cursor-pointer ${speed === s
+                                        ? "bg-orange-500 text-black font-semibold"
+                                        : "bg-neutral-800 text-orange-500/50"
+                                    }`}
+                            >
+                                {s}×
+                            </button>
+                        ))}
+                    </div>
 
                 </div>
-
-                {/* Speed selector — highlights the currently active speed */}
-                <div className="flex items-center gap-2 justify-center">
-                    {SPEEDS.map(s => (
-                        <button
-                            key={s}
-                            onClick={() => changeSpeed(s)}
-                            className={`px-2.5 py-1 rounded-md text-xs cursor-pointer ${speed === s
-                                    ? "bg-white text-neutral-950 font-semibold"
-                                    : "bg-neutral-800 text-neutral-400"
-                                }`}
-                        >
-                            {s}×
-                        </button>
-                    ))}
-                </div>
-
-                {/* Hidden audio element — all playback is controlled via audioRef */}
-                <audio ref={audioRef} src={song.URL} />
-
             </div>
+
+            {/* Hidden audio element */}
+            <audio ref={audioRef} src={song.URL} />
         </div>
     );
 }
